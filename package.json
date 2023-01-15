@@ -1,0 +1,17 @@
+{
+  "name": "gulp-get.started",
+  "version": "1.0.0",
+  "description": "gulp-get.started",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "gulp"
+  ],
+  "author": "Albert <pivnenko.albert@gmail.com>",
+  "license": "ISC",
+  "devDependencies": {
+    "gulp": "^4.0.2"
+  }
+}
