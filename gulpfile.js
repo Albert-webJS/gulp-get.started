@@ -48,8 +48,16 @@ const path = {
 };
 
 function html() {
+  panini.refresh();
   return src(path.src.html, { base: `${srcPath}/` })
     .pipe(plumber())
+    .pipe(
+      panini({
+        root: `${srcPath}/`,
+        layouts: `${srcPath}/app/templates/layouts/`,
+        partials: `${srcPath}/app/templates/partials/`,
+      })
+    )
     .pipe(dest(path.build.html))
     .pipe(browserSync.reload({ stream: true }));
 }
