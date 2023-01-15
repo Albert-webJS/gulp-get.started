@@ -14,6 +14,7 @@ const plumber = require("gulp-plumber");
 const panini = require("panini");
 const imagemin = require("gulp-imagemin");
 const del = require("del");
+const notify = require("gulp-notify");
 const browserSync = require("browser-sync").create();
 
 // TODO created paths to build the project
@@ -33,15 +34,15 @@ const path = {
     html: `${srcPath}/*.html`,
     css: `${srcPath}/app/scss/*.scss`,
     js: `${srcPath}/app/js/**/*.js`,
-    images: `${srcPath}/app/images/**/*.{jpeg, png, svg, gif, ico}`,
-    fonts: `${srcPath}/app/fonts/**/*.{eot, woff, woff2, ttf, svg}`,
+    images: `${srcPath}/app/images/**/*.{jpeg,png,svg,gif,ico}`,
+    fonts: `${srcPath}/app/fonts/**/*.{eot,woff,woff2,ttf,svg}`,
   },
   watch: {
     html: `${srcPath}/**/*.html`,
     css: `${srcPath}/app/scss/**/*.scss`,
     js: `${srcPath}/app/js/**/*.js`,
-    images: `${srcPath}/app/images/**/*.{jpeg, png, svg, gif, ico}`,
-    fonts: `${srcPath}/app/fonts/**/*.{eot, woff, woff2, ttf, svg}`,
+    images: `${srcPath}/app/images/**/*.{jpeg,png,svg,gif,ico}`,
+    fonts: `${srcPath}/app/fonts/**/*.{eot,woff,woff2,ttf,svg}`,
   },
   clean: `./${dist}/`,
 };
@@ -54,8 +55,19 @@ function html() {
 }
 
 function css() {
+  const onError = function (error) {
+    notify.onError({
+      title: "Gulp",
+      subtitle: "Failure!",
+      message: "Error: <%= error.message %>",
+      sound: "Beep",
+    })(error);
+
+    this.emit("end");
+  };
+
   return src(path.src.css, { base: `${srcPath}/app/scss/` })
-    .pipe(plumber())
+    .pipe(plumber({ errorHandler: onError }))
     .pipe(sass())
     .pipe(autoprefixer())
     .pipe(cssbeautify())
@@ -80,8 +92,19 @@ function css() {
 }
 
 function js() {
+  const onError = function (error) {
+    notify.onError({
+      title: "Gulp",
+      subtitle: "Failure!",
+      message: "Error: <%= error.message %>",
+      sound: "Beep",
+    })(error);
+
+    this.emit("end");
+  };
+
   return src(path.src.js, { base: `${srcPath}/app/js/` })
-    .pipe(plumber())
+    .pipe(plumber({ errorHandler: onError }))
     .pipe(rigger())
     .pipe(dest(path.build.js))
     .pipe(uglify())
@@ -92,7 +115,7 @@ function js() {
       })
     )
     .pipe(dest(path.build.js))
-    .pipe(browserSync.reload({stream: true}))
+    .pipe(browserSync.reload({ stream: true }));
 }
 
 function images() {
@@ -108,7 +131,7 @@ function images() {
       ])
     )
     .pipe(dest(path.build.images))
-    .pipe(browserSync.reload({stream: true}))
+    .pipe(browserSync.reload({ stream: true }));
 }
 
 function fonts() {
