@@ -1,4 +1,4 @@
-//= module/logger.js
+console.log("file main.js includs logger.js")
 
 let index = 0;
 let speed = 100;

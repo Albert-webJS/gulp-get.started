@@ -1,0 +1,1 @@
+console.log("file main.js includs logger.js")

@@ -16,46 +16,52 @@ const imagemin = require("gulp-imagemin");
 const del = require("del");
 const notify = require("gulp-notify");
 const browserSync = require("browser-sync").create();
+const favicons = require("gulp-favicons");
+const filter = require("gulp-filter");
 
 // TODO created paths to build the project
-
-const srcPath = "src";
-const dist = "dist";
+const srcFolder = "src";
+const buildFolder = "dist";
 
 const path = {
+  root: `${buildFolder}/`,
   build: {
-    html: `${dist}/`,
-    css: `${dist}/app/css/`,
-    js: `${dist}/app/js/`,
-    images: `${dist}/app/images/`,
-    fonts: `${dist}/app/fonts/`,
+    html: `${buildFolder}/`,
+    css: `${buildFolder}/app/css/`,
+    js: `${buildFolder}/app/js/`,
+    images: `${buildFolder}/app/images/`,
+    fonts: `${buildFolder}/app/fonts/`,
+    favicon: `${buildFolder}/favicons/`,
   },
   src: {
-    html: `${srcPath}/*.html`,
-    css: `${srcPath}/app/scss/*.scss`,
-    js: `${srcPath}/app/js/**/*.js`,
-    images: `${srcPath}/app/images/**/*.{jpeg,png,svg,gif,ico}`,
-    fonts: `${srcPath}/app/fonts/**/*.{eot,woff,woff2,ttf,svg}`,
+    html: `${srcFolder}/*.html`,
+    css: `${srcFolder}/app/scss/*.scss`,
+    js: `${srcFolder}/app/js/**/*.js`,
+    images: `${srcFolder}/app/images/**/*.{jpeg,png,svg,gif,ico}`,
+    fonts: `${srcFolder}/app/fonts/**/*.{eot,woff,woff2,ttf,svg}`,
+    favicon: `${srcFolder}/app/images/favicon/favicon.svg`,
   },
   watch: {
-    html: `${srcPath}/**/*.html`,
-    css: `${srcPath}/app/scss/**/*.scss`,
-    js: `${srcPath}/app/js/**/*.js`,
-    images: `${srcPath}/app/images/**/*.{jpeg,png,svg,gif,ico}`,
-    fonts: `${srcPath}/app/fonts/**/*.{eot,woff,woff2,ttf,svg}`,
+    html: `${srcFolder}/**/*.html`,
+    css: `${srcFolder}/app/scss/**/*.scss`,
+    js: `${srcFolder}/app/js/**/*.js`,
+    images: `${srcFolder}/app/images/**/*.{jpeg,png,svg,gif,ico}`,
+    fonts: `${srcFolder}/app/fonts/**/*.{eot,woff,woff2,ttf,svg}`,
+    favicon: `${srcFolder}/app/images/favicon/favicon.svg`,
   },
-  clean: `./${dist}/`,
+  clean: `./${buildFolder}/`,
 };
 
+// TODO created main TASK for gulp
 function html() {
   panini.refresh();
-  return src(path.src.html, { base: `${srcPath}/` })
+  return src(path.src.html, { base: `${srcFolder}/` })
     .pipe(plumber())
     .pipe(
       panini({
-        root: `${srcPath}/`,
-        layouts: `${srcPath}/app/templates/layouts/`,
-        partials: `${srcPath}/app/templates/partials/`,
+        root: `${srcFolder}/`,
+        layouts: `${srcFolder}/app/templates/layouts/`,
+        partials: `${srcFolder}/app/templates/partials/`,
       })
     )
     .pipe(dest(path.build.html))
@@ -74,7 +80,7 @@ function css() {
     this.emit("end");
   };
 
-  return src(path.src.css, { base: `${srcPath}/app/scss/` })
+  return src(path.src.css, { base: `${srcFolder}/app/scss/` })
     .pipe(plumber({ errorHandler: onError }))
     .pipe(sass())
     .pipe(autoprefixer())
@@ -111,7 +117,7 @@ function js() {
     this.emit("end");
   };
 
-  return src(path.src.js, { base: `${srcPath}/app/js/` })
+  return src(path.src.js, { base: `${srcFolder}/app/js/` })
     .pipe(plumber({ errorHandler: onError }))
     .pipe(rigger())
     .pipe(dest(path.build.js))
@@ -127,7 +133,7 @@ function js() {
 }
 
 function images() {
-  return src(path.src.images, { base: `${srcPath}/app/images/` })
+  return src(path.src.images, { base: `${srcFolder}/app/images/` })
     .pipe(
       imagemin([
         imagemin.gifsicle({ interlaced: true }),
@@ -142,8 +148,29 @@ function images() {
     .pipe(browserSync.reload({ stream: true }));
 }
 
+function favicon() {
+  return src(path.src.favicon, { base: `${srcFolder}/app/images/favicon/` })
+    .pipe(
+      favicons({
+        icons: {
+          favicons: true,
+          appleIcon: true,
+          android: true,
+          windows: false,
+          yandex: false,
+          coast: false,
+          firefox: false,
+          appleStatrup: false,
+        },
+      })
+    )
+    .pipe(dest(path.build.favicon))
+    .pipe(filter(["favicon.ico", "apple-touch-icon.png", "manifest.json"]))
+    .pipe(dest(path.root));
+}
+
 function fonts() {
-  return src(path.src.fonts, { base: `${srcPath}/app/fonts/` }).pipe(
+  return src(path.src.fonts, { base: `${srcFolder}/app/fonts/` }).pipe(
     dest(path.build.fonts)
   );
 }
@@ -155,7 +182,7 @@ function clean() {
 function server() {
   browserSync.init({
     server: {
-      baseDir: `./${dist}/`,
+      baseDir: `./${buildFolder}/`,
     },
   });
 }
@@ -166,9 +193,13 @@ function watchFile() {
   gulp.watch([path.watch.js], js);
   gulp.watch([path.watch.images], images);
   gulp.watch([path.watch.fonts], fonts);
+  gulp.watch([path.watch.favicon], favicon);
 }
 
-const build = gulp.series(clean, gulp.parallel(html, css, js, images, fonts));
+const build = gulp.series(
+  clean,
+  gulp.parallel(html, css, js, images, fonts, favicon)
+);
 const watch = gulp.parallel(build, watchFile, server);
 
 exports.html = html;
@@ -179,5 +210,6 @@ exports.fonts = fonts;
 exports.clean = clean;
 exports.build = build;
 exports.watch = watch;
+exports.favicon = favicon;
 
 exports.default = watch;
