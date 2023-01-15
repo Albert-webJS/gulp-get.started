@@ -49,7 +49,8 @@ const path = {
 function html() {
   return src(path.src.html, { base: `${srcPath}/` })
     .pipe(plumber())
-    .pipe(dest(path.build.html));
+    .pipe(dest(path.build.html))
+    .pipe(browserSync.reload({ stream: true }));
 }
 
 function css() {
@@ -74,7 +75,8 @@ function css() {
         extname: ".css",
       })
     )
-    .pipe(dest(path.build.css));
+    .pipe(dest(path.build.css))
+    .pipe(browserSync.reload({ stream: true }));
 }
 
 function js() {
@@ -89,7 +91,8 @@ function js() {
         extname: ".js",
       })
     )
-    .pipe(dest(path.build.js));
+    .pipe(dest(path.build.js))
+    .pipe(browserSync.reload({stream: true}))
 }
 
 function images() {
@@ -104,7 +107,8 @@ function images() {
         }),
       ])
     )
-    .pipe(dest(path.build.images));
+    .pipe(dest(path.build.images))
+    .pipe(browserSync.reload({stream: true}))
 }
 
 function fonts() {
@@ -117,7 +121,24 @@ function clean() {
   return del(path.clean);
 }
 
+function server() {
+  browserSync.init({
+    server: {
+      baseDir: `./${dist}/`,
+    },
+  });
+}
+
+function watchFile() {
+  gulp.watch([path.watch.html], html);
+  gulp.watch([path.watch.css], css);
+  gulp.watch([path.watch.js], js);
+  gulp.watch([path.watch.images], images);
+  gulp.watch([path.watch.fonts], fonts);
+}
+
 const build = gulp.series(clean, gulp.parallel(html, css, js, images, fonts));
+const watch = gulp.parallel(build, watchFile, server);
 
 exports.html = html;
 exports.css = css;
@@ -126,3 +147,6 @@ exports.images = images;
 exports.fonts = fonts;
 exports.clean = clean;
 exports.build = build;
+exports.watch = watch;
+
+exports.default = watch;
