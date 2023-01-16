@@ -21,7 +21,7 @@ const filter = require("gulp-filter");
 
 // TODO created paths to build the project
 const srcFolder = "src";
-const buildFolder = "dist";
+const buildFolder = "docs";
 
 const path = {
   root: `${buildFolder}/`,
